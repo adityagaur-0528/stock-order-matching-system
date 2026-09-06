@@ -19,7 +19,7 @@ The system accepts stock buy and sell orders from users and processes them accor
 
 - **Language:** C++
 - **Concepts:** Data Structures, Object-Oriented Programming
-- **Data Structures:** Map, Queue / Order-based structures
+- **Data Structures:** Map, Queue / Order-based structures, BST
 - **Development Environment:** Visual Studio Code
 - **Version Control:** Git & GitHub
 
