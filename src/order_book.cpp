@@ -22,20 +22,16 @@ public:
 
 int main()
 {
-    // Highest price first for Buy orders
     map<int, queue<Order>, greater<int>> buy;
 
-    // Lowest price first for Sell orders
     map<int, queue<Order>> sell;
 
-    // Sample orders
     buy[105].push(Order(1, 'B', 105, 10));
     buy[103].push(Order(2, 'B', 103, 5));
 
     sell[103].push(Order(3, 'S', 103, 6));
     sell[108].push(Order(4, 'S', 108, 10));
 
-    // Matching
     while (!buy.empty() && !sell.empty())
     {
         auto b = buy.begin();
