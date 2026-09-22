@@ -1,15 +1,38 @@
 #include <iostream>
+#include "InputStream.h"
+
 using namespace std;
 
-struct Order
+bool validateOrder(const Order& o)
 {
-    int id;
-    char type;
-    int price;
-    int qty;
-};
+    if (o.id <= 0)
+    {
+        cout << "Invalid Order ID." << endl;
+        return false;
+    }
 
-int main()
+    if (o.type != 'B' && o.type != 'S')
+    {
+        cout << "Invalid Order Type. Use B or S." << endl;
+        return false;
+    }
+
+    if (o.price <= 0)
+    {
+        cout << "Price must be greater than 0." << endl;
+        return false;
+    }
+
+    if (o.qty <= 0)
+    {
+        cout << "Quantity must be greater than 0." << endl;
+        return false;
+    }
+
+    return true;
+}
+
+Order createOrder()
 {
     Order o;
 
@@ -25,16 +48,5 @@ int main()
     cout << "Enter Quantity: ";
     cin >> o.qty;
 
-    if ((o.type == 'B' || o.type == 'S') &&
-        o.price > 0 && o.qty > 0)
-    {
-        cout << "\nValid Order" << endl;
-        cout << "Order forwarded for processing." << endl;
-    }
-    else
-    {
-        cout << "\nInvalid Order" << endl;
-    }
-
-    return 0;
+    return o;
 }

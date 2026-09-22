@@ -1,43 +1,71 @@
 #include <iostream>
+#include "OrderManagement.h"
+
 using namespace std;
 
-struct Order
+void updateOrder(Order& order, int tradedQuantity)
 {
-    int id;
-    int qty;
-    bool active;
-};
+    if (tradedQuantity <= 0)
+    {
+        cout << "Invalid traded quantity." << endl;
+        return;
+    }
 
-void updateOrder(Order &o, int traded)
-{
-    o.qty -= traded;
+    if (tradedQuantity > order.qty)
+    {
+        cout << "Traded quantity cannot exceed order quantity."
+             << endl;
+        return;
+    }
 
-    if (o.qty == 0)
-        o.active = false;
+    order.qty -= tradedQuantity;
+
+    cout << "\nOrder Updated" << endl;
+    cout << "Order ID: " << order.id << endl;
+    cout << "Traded Quantity: " << tradedQuantity << endl;
+    cout << "Remaining Quantity: " << order.qty << endl;
 }
 
-void display(Order o)
+bool isCompleted(const Order& order)
 {
-    cout << "Order ID: " << o.id << endl;
-    cout << "Remaining Quantity: " << o.qty << endl;
+    return order.qty == 0;
+}
 
-    if (o.active)
-        cout << "Status: Pending" << endl;
-    else
+bool isPending(const Order& order)
+{
+    return order.qty > 0;
+}
+
+void displayOrderStatus(const Order& order)
+{
+    cout << "\n---------- Order Status ----------" << endl;
+    cout << "Order ID: " << order.id << endl;
+    cout << "Order Type: " << order.type << endl;
+    cout << "Price: " << order.price << endl;
+    cout << "Remaining Quantity: " << order.qty << endl;
+
+    if (isCompleted(order))
+    {
         cout << "Status: Completed" << endl;
+    }
+    else
+    {
+        cout << "Status: Pending" << endl;
+    }
 }
 
-int main()
+void processOrderUpdate(Order& order, int tradedQuantity)
 {
-    Order o = {101, 20, true};
+    updateOrder(order, tradedQuantity);
 
-    cout << "Before Trade:\n";
-    display(o);
-
-    updateOrder(o, 8);
-
-    cout << "\nAfter Trade:\n";
-    display(o);
-
-    return 0;
+    if (isCompleted(order))
+    {
+        cout << "Order " << order.id
+             << " has been fully executed." << endl;
+    }
+    else
+    {
+        cout << "Order " << order.id
+             << " remains pending." << endl;
+    }
 }
