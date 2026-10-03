@@ -382,6 +382,7 @@ inline Stock getStock(int choice)
             );
 
         default:
+        
             return Stock();
     }
 }
