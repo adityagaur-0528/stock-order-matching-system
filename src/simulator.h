@@ -177,8 +177,10 @@ public:
 
 class Order
 {
-public:
+private:
+    static inline int nextId = 1;
 
+public:
     int id;
     int traderId;
     char type;
@@ -198,8 +200,8 @@ public:
     }
 
     // Parameterized Constructor
+    // Order ID is generated automatically
     Order(
-        int i,
         int tId,
         char t,
         std::string s,
@@ -207,7 +209,7 @@ public:
         int q
     )
     {
-        id = i;
+        id = nextId++;
         traderId = tId;
         type = t;
         symbol = s;
@@ -215,8 +217,6 @@ public:
         qty = q;
     }
 };
-
-
 // ============================================================
 // STOCK CLASS
 // ============================================================

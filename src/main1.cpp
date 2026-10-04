@@ -97,14 +97,13 @@ int main()
         return 0;
     }
 
-    Order order(
-        1,
-        selectedTrader->getId(),
-        type,
-        selectedStock.getSymbol(),
-        price,
-        quantity
-    );
+  Order order(
+    selectedTrader->getId(),
+    type,
+    selectedStock.getSymbol(),
+    price,
+    quantity
+     );
 
     cout << "\n========== ORDER CREATED ==========" << endl;
 
