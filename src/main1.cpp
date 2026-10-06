@@ -236,6 +236,7 @@ int main()
             }
 
 
+            
             if (!selectedTrader.addHolding(
                     selectedStock.getSymbol(),
                     quantity))
