@@ -1,4 +1,5 @@
 #include <iostream>
+
 using namespace std;
 
 struct Order
@@ -24,13 +25,17 @@ void updateOrder(Order &o, int traded)
 void display(Order o)
 {
 
-    cout << "Order ID: " << o.id << endl;
+    cout << "Order ID: " << o.id << endl;  
+
     cout << "Remaining Quantity: " << o.qty << endl;
 
     if (o.active)
-        cout << "Status: Pending" << endl;
+    
+    cout << "Status: Pending" << endl;
+    
     else
-        cout << "Status: Completed" << endl;
+    
+    cout << "Status: Completed" << endl;
 
 }
 
@@ -38,13 +43,15 @@ int main()
 {
     Order o = {101, 20, true};
 
+
     cout << "Before Trade:\n";
+    
     display(o);
 
     updateOrder(o, 8);
 
     cout << "\nAfter Trade:\n";
+
     display(o);
 
-    return 0;
 }
