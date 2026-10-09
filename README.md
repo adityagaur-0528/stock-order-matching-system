@@ -38,6 +38,33 @@ Matching Engine
     ↓
 Trade Execution
     ↓
+
+
+# Stock Order Matching Simulator — V2
+
+This redesign intentionally keeps the project academically strong without turning it into a 3,500+ line monolith.
+
+## Architecture
+
+Web authentication + market-data API → Node/Express → line protocol → C++ trading engine → Custom BST + Custom Queue → price-time matching + trade settlement → Node → graphical terminal.
+
+## API choice
+
+The market-data layer uses Indian API (stock.indianapi.in) instead of Twelve Data. It exposes stock search/details, NSE most-active stocks, current NSE/BSE pricing and historical price data. Put the API key in backend/.env as INDIAN_API_KEY.
+
+## C++ responsibilities
+
+- Trader/account model
+- Balance and holding validation
+- Cash/holding reservation for pending orders
+- Order IDs and sequence
+- Custom circular Queue for FIFO at one price level
+- Custom BST for price levels
+- One OrderBook per symbol
+- Price-time matching
+- Partial fills
+- Trade settlement
+- Machine-readable order book output for the UI
 Quantity Update
     ↓
 Pending / Completed Orders
