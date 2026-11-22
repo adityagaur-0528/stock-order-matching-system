@@ -836,7 +836,30 @@ app.get("/api/orderbook/:symbol", auth, async (req, res) => {
             }
             if (line.startsWith("ORDER|")) {
                 const p = line.split("|");
-                const order = { id: Number(p[1]), traderId: Number(p[2]), quantity: Number(p[3]), price: Number(p[4]) };
+                const id = Number(p[1]);
+                const traderId = Number(p[2]);
+                const quantity = Number(p[3]);
+                const price = Number(p[4]);
+
+                // The C++ order book stores traderId, while the account history
+                // stores the trader's display name and original placement time.
+                const trader = users.users.find(
+                    (user) => Number(user.traderId) === traderId
+                );
+                const historyOrder = (trader?.orders || []).find(
+                    (item) => Number(item.id) === id &&
+                        String(item.symbol || "").toUpperCase() === String(req.params.symbol).toUpperCase()
+                );
+
+                const order = {
+                    id,
+                    traderId,
+                    traderName: trader?.name || `Trader #${traderId}`,
+                    quantity,
+                    price,
+                    createdAt: historyOrder?.createdAt || null,
+                };
+
                 if (current) {
                     current.orders.push(order);
                     current.quantity += order.quantity;

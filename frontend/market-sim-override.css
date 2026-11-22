@@ -247,3 +247,74 @@ tbody tr:hover { background: rgba(148,163,184,.035); }
 #appMain { min-height: calc(100vh - 72px); align-content: start; }
 .quick-nav-link.active { color: #eafff6; background: rgba(34,197,139,.13); }
 .quick-nav-link.active span { color: var(--ms-green); }
+
+/* Market Depth: header and order rows share one six-column layout. */
+.orderbook-scroll {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #30435e transparent;
+}
+
+.depth-header.order-depth-header,
+.order-depth-row {
+    display: grid;
+    grid-template-columns:
+        minmax(76px, .8fr)
+        minmax(90px, .9fr)
+        minmax(130px, 1.25fr)
+        minmax(76px, .8fr)
+        minmax(95px, 1fr)
+        minmax(135px, 1.35fr);
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 720px;
+}
+
+.depth-header.order-depth-header {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--ms-border);
+    color: #8294ad;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .6px;
+}
+
+.depth-header.order-depth-header > div {
+    min-width: 0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.order-depth-row {
+    min-height: 42px;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(32,49,73,.75);
+    color: var(--ms-text);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.order-depth-row > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.order-depth-row:hover {
+    background: rgba(148,163,184,.045);
+}
+
+.order-depth-row .trader-id {
+    display: block;
+    margin-top: 3px;
+    color: var(--ms-muted);
+    font-size: 10px;
+}
+
+.order-depth-row .order-time {
+    color: #91a4bf;
+    white-space: nowrap;
+}
+
