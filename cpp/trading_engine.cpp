@@ -270,50 +270,51 @@ bool TradingEngine::executeMatching(OrderBook& book, int incomingOrderId, ostrea
         if (buyRef.price + 1e-9 < sellRef.price)
             break;
 
-        // Prevent a trader from buying their own shares
+        // Self-trade prevention
         if (buyRef.traderId == sellRef.traderId)
         {
-            Order incoming;
+            Order buy = buyRef;
+            Order sell = sellRef;
 
-            if (!book.getOrderById(incomingOrderId, incoming))
+            // Cancel the newer of the two conflicting orders
+            Order cancelled =
+                (buy.sequence > sell.sequence) ? buy : sell;
+
+            Trader* owner = findTrader(cancelled.traderId);
+
+            if (!book.cancelOrder(cancelled.id))
                 break;
-
-            // The incoming order must be one of the conflicting orders
-            if (incoming.id != buyRef.id && incoming.id != sellRef.id)
-                break;
-
-            if (!book.cancelOrder(incomingOrderId))
-                break;
-
-            Trader* owner = findTrader(incoming.traderId);
 
             if (owner)
             {
-                if (incoming.type == 'B')
-                    owner->releaseCash(incoming.price * incoming.qty);
-                else if (incoming.type == 'S')
+                if (cancelled.type == 'B')
+                    owner->releaseCash(
+                        cancelled.price * cancelled.qty
+                    );
+                else
                     owner->releaseReservedHolding(
-                        incoming.symbol, incoming.qty
+                        cancelled.symbol, cancelled.qty
                     );
             }
 
             out << "SELF_TRADE_PREVENTED|"
-                << incoming.id << "|"
-                << incoming.traderId << "\n";
+                << cancelled.id << "|"
+                << cancelled.traderId << "\n";
 
             out << "CANCELLED|"
-                << incoming.id << "|"
-                << incoming.traderId << "|"
-                << incoming.type << "|"
-                << incoming.symbol << "|"
+                << cancelled.id << "|"
+                << cancelled.traderId << "|"
+                << cancelled.type << "|"
+                << cancelled.symbol << "|"
                 << fixed << setprecision(2)
-                << incoming.price << "|"
-                << incoming.qty << "\n";
+                << cancelled.price << "|"
+                << cancelled.qty << "\n";
 
             if (owner)
                 emitAccount(*owner, out);
 
-            break;
+            // Continue matching instead of stopping!
+            continue;
         }
 
         const double tradePrice =
