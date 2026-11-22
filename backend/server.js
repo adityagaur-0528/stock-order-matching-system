@@ -797,7 +797,61 @@ app.post("/api/order/:id/cancel", auth, async (req, res) => {
     }
 });
 
+app.get("/api/orderbook/:symbol", auth, async (req, res) => {
+    try {
+        const lines = await sendEngineCommand(`STATUS|${req.params.symbol.toUpperCase()}`);
+        let side = null;
+        const levels = { BUY: [], SELL: [] };
+        let current = null;
+        for (const line of lines) {
+            if (line.startsWith("SIDE|")) {
+                // Save the previous side's last price level first.
+                if (current && side) {
+                    levels[side].push(current);
+                }
+                current = null;
+                const nextSide = line.split("|")[1];
+                side = nextSide === "BUY" || nextSide === "SELL" ? nextSide : null;
+                continue;
+            }
+            if (line.startsWith("LEVEL|")) {
+                if (current && side) levels[side].push(current);
+                const p = line.split("|");
+                current = { price: Number(p[1]), orderCount: Number(p[2]), quantity: 0, orders: [] };
+                continue;
+            }
+            if (line.startsWith("ORDER|")) {
+                const p = line.split("|");
+const orderId = Number(p[1]);
+const traderId = Number(p[2]);
 
+const owner = users.users.find(
+    u => Number(u.traderId) === traderId
+);
+
+const historyOrder = owner?.orders?.find(
+    o => Number(o.id) === orderId
+);
+
+const order = {  
+    id: orderId,
+    traderId,
+    quantity: Number(p[3]),
+    price: Number(p[4]),
+    createdAt: historyOrder?.createdAt || null
+};
+                if (current) {
+                    current.orders.push(order);
+                    current.quantity += order.quantity;
+                }
+            }
+        }
+        if (current && side) levels[side].push(current);
+        res.json({ success: true, data: levels });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 app.post("/api/order", auth, async (req, res) => {
     try {
