@@ -76,8 +76,20 @@
         </div>
         <div class="panel book-panel">
           <div class="panel-title"><span>Market Depth</span><span id="bookStatus" class="live-dot">● Order book</span></div>
-          <div class="depth-header"><div>BUY QTY</div><div>PRICE</div><div>SELL QTY</div></div>
-          <div id="depthRows" class="depth-rows"><div class="empty">Select a stock to view its order book.</div></div>
+          
+<div class="depth-header order-depth-header">
+    <div>SIDE</div>
+    <div>ORDER ID</div>
+    <div>TRADER</div>
+    <div>QUANTITY</div>
+    <div>PRICE</div>
+    <div>PLACED AT</div>
+</div>
+
+<div id="depthRows" class="depth-rows">
+    <div class="empty">Select a stock to view its order book.</div>
+</div>
+
         </div>
       </section>
 

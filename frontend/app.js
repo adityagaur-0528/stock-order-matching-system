@@ -89,21 +89,77 @@
         }
     }
 
-    async function loadOrderBook(symbol = state.symbol) {
-        try {
-            const result = await api(`/api/orderbook/${encodeURIComponent(symbol)}`);
-            const buy = result.data.BUY || [];
-            const sell = result.data.SELL || [];
-            const rows = Math.max(buy.length, sell.length, 1);
-            const html = [];
-            for (let i = 0; i < rows; i++) {
-                const b = buy[i], s = sell[i];
-                html.push(`<div class="depth-row"><div class="buy-depth">${b ? Number(b.quantity).toLocaleString("en-IN") : "—"}</div><div class="depth-price">${b || s ? money(b?.price ?? s?.price) : "No open orders"}</div><div class="sell-depth">${s ? Number(s.quantity).toLocaleString("en-IN") : "—"}</div></div>`);
-            }
-            $("depthRows").innerHTML = html.join("");
+
+async function loadOrderBook(symbol = state.symbol) {
+    try {
+        const result = await api(
+            `/api/orderbook/${encodeURIComponent(symbol)}`
+        );
+
+        const buy = result.data.BUY || [];
+        const sell = result.data.SELL || [];
+
+    
+        const allOrders = [
+            ...buy.flatMap(level =>
+                level.orders.map(order => ({
+                    ...order,
+                    side: "BUY"
+                }))
+            ),
+            ...sell.flatMap(level =>
+                level.orders.map(order => ({
+                    ...order,
+                    side: "SELL"
+                }))
+            )
+        ];
+
+        if (allOrders.length === 0) {
+            $("depthRows").innerHTML =
+                '<div class="empty">No open orders.</div>';
+
             $("bookStatus").textContent = "● Order book";
-        } catch (error) { $("depthRows").innerHTML = `<div class="empty">${safe(error.message)}</div>`; }
+            return;
+        }
+
+        $("depthRows").innerHTML = allOrders.map(order => {
+            const time = order.createdAt
+                ? new Date(order.createdAt).toLocaleString("en-IN")
+                : "Time unavailable";
+
+            return `
+                <div class="order-depth-row">
+                    <div class="${order.side === "BUY" ? "buy-text" : "sell-text"}">
+                        <strong>${order.side}</strong>
+                    </div>
+
+                    <div>#${Number(order.id)}</div>
+
+                    <div>
+                        ${safe(order.traderName)}
+                        <small class="trader-id">
+                            #${Number(order.traderId)}
+                        </small>
+                    </div>
+
+                    <div>${Number(order.quantity)}</div>
+
+                    <div>${money(order.price)}</div>
+
+                    <div class="order-time">${safe(time)}</div>
+                </div>
+            `;
+        }).join("");
+
+        $("bookStatus").textContent = "● Order book";
+
+    } catch (error) {
+        $("depthRows").innerHTML =
+            `<div class="empty">${safe(error.message)}</div>`;
     }
+}
+
 
     async function loadChart(symbol = state.symbol) {
         try {
