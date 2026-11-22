@@ -171,7 +171,21 @@ engine.stdout.on("data", (chunk) => {
 
 engine.stderr.on("data", (chunk) => console.error("C++:", chunk.toString().trim()));
 
-engine.on("close", (code) => console.log(`C++ engine stopped: ${code}`));
+engine.on("error", (err) => {
+    console.error(`Could not start the C++ engine at ${ENGINE_PATH}: ${err.message}`);
+    console.error("Compile it first, e.g. from cpp/: g++ -std=c++17 models.cpp data_structures.cpp trading_engine.cpp engine_bridge.cpp -o engine_bridge");
+    process.exit(1);
+});
+
+engine.on("close", (code) => {
+    console.log(`C++ engine stopped: ${code}`);
+    // Unblock any request still waiting on the engine instead of hanging forever.
+    if (pending) {
+        const resolver = pending;
+        pending = null;
+        resolver(["ERROR|C++ engine stopped unexpectedly"]);
+    }
+});
 let linesForRequest = [];
 let engineCommandQueue = Promise.resolve();
 
@@ -822,24 +836,7 @@ app.get("/api/orderbook/:symbol", auth, async (req, res) => {
             }
             if (line.startsWith("ORDER|")) {
                 const p = line.split("|");
-const orderId = Number(p[1]);
-const traderId = Number(p[2]);
-
-const owner = users.users.find(
-    u => Number(u.traderId) === traderId
-);
-
-const historyOrder = owner?.orders?.find(
-    o => Number(o.id) === orderId
-);
-
-const order = {  
-    id: orderId,
-    traderId,
-    quantity: Number(p[3]),
-    price: Number(p[4]),
-    createdAt: historyOrder?.createdAt || null
-};
+                const order = { id: Number(p[1]), traderId: Number(p[2]), quantity: Number(p[3]), price: Number(p[4]) };
                 if (current) {
                     current.orders.push(order);
                     current.quantity += order.quantity;
@@ -862,9 +859,10 @@ app.post("/api/order", auth, async (req, res) => {
         const symbol = String(req.body.symbol || "")
             .trim()
             .toUpperCase();
-        const price = Number(req.body.price);
+        const rawPrice = Number(req.body.price);
+        const price = Math.round(rawPrice * 100) / 100; // engine works in 2 decimals (paise)
         const quantity = Number(req.body.quantity);
-        if (!type || !symbol || !Number.isFinite(price) || !Number.isInteger(quantity) || price <= 0 || quantity <= 0)
+        if (!type || !symbol || !Number.isFinite(price) || !Number.isInteger(quantity) || price < 0.01 || quantity <= 0)
             return res.status(400).json({ success: false, message: "Invalid order" });
         const lines = await sendEngineCommand(`ADD|${req.user.traderId}|${type}|${symbol}|${price}|${quantity}`);
         const errorLine = lines.find((x) => x.startsWith("ERROR|"));
