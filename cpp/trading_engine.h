@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 class OrderBook
 {
     string symbol;
@@ -19,7 +18,7 @@ public:
     OrderBook();
     explicit OrderBook(const string& symbol);
     const string& getSymbol() const;
-    
+
     bool addOrder(const Order& order);
     bool cancelOrder(int orderId);
     bool getOrderById(int orderId, Order& order) const;
@@ -34,6 +33,7 @@ public:
 
     void emitStatus(ostream& out) const;
 };
+
 class TradingEngine
 {
     static const int MAX_TRADERS = 200;
@@ -44,28 +44,25 @@ class TradingEngine
 
     OrderBook* books[MAX_BOOKS];
     int bookCount;
-    
+
     Trader* findTrader(int traderId);
     const Trader* findTrader(int traderId) const;
 
     OrderBook* getOrderBook(const string& symbol);
     const OrderBook* getOrderBook(const string& symbol) const;
 
-    bool executeMatching(
-        OrderBook& book,
-        char incomingType,
-        ostream& out
-    );
+    bool executeMatching(OrderBook&, int, ostream&);
 
     void emitTrade(const Trade& trade, ostream& out) const;
     void emitAccount(const Trader& trader, ostream& out) const;
-     public:
+
+public:
     TradingEngine();
     ~TradingEngine();
+
     TradingEngine(const TradingEngine&) = delete;
     TradingEngine& operator=(const TradingEngine&) = delete;
 
-    
     void createTrader(const string& name, double balance, ostream& out);
 
     bool restoreTrader(int id, const string& name, double balance);

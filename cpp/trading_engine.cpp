@@ -81,6 +81,17 @@ void OrderBook::emitStatus(ostream& out) const
     sellOrders.emitAscending(out);
 }
 
+void TradingEngine::emitTrade(const Trade& t, ostream& out) const
+{
+    out << "TRADE|" << t.buyOrderId << "|"
+        << t.sellOrderId << "|"
+        << t.buyTraderId << "|"
+        << t.sellTraderId << "|"
+        << t.symbol << "|"
+        << fixed << setprecision(2)
+        << t.price << "|" << t.quantity << "\n";
+}
+
 TradingEngine::TradingEngine()
     : traderCount(0), bookCount(0)
 {
@@ -247,18 +258,7 @@ void TradingEngine::allocateHolding(int traderId, const string& symbol,
     out << "END\n";
 }
 
-void TradingEngine::emitTrade(const Trade& t, ostream& out) const
-{
-    out << "TRADE|" << t.buyOrderId << "|"
-        << t.sellOrderId << "|"
-        << t.buyTraderId << "|"
-        << t.sellTraderId << "|"
-        << t.symbol << "|"
-        << fixed << setprecision(2)
-        << t.price << "|" << t.quantity << "\n";
-}
-
-bool TradingEngine::executeMatching(OrderBook& book, char, ostream& out)
+bool TradingEngine::executeMatching(OrderBook& book, int incomingOrderId, ostream& out)
 {
     bool traded = false;
 
@@ -268,9 +268,54 @@ bool TradingEngine::executeMatching(OrderBook& book, char, ostream& out)
         Order& sellRef = book.getBestSellOrder();
 
         if (buyRef.price + 1e-9 < sellRef.price)
+            break;
+
+        // Prevent a trader from buying their own shares
+        if (buyRef.traderId == sellRef.traderId)
         {
+            Order incoming;
+
+            if (!book.getOrderById(incomingOrderId, incoming))
+                break;
+
+            // The incoming order must be one of the conflicting orders
+            if (incoming.id != buyRef.id && incoming.id != sellRef.id)
+                break;
+
+            if (!book.cancelOrder(incomingOrderId))
+                break;
+
+            Trader* owner = findTrader(incoming.traderId);
+
+            if (owner)
+            {
+                if (incoming.type == 'B')
+                    owner->releaseCash(incoming.price * incoming.qty);
+                else if (incoming.type == 'S')
+                    owner->releaseReservedHolding(
+                        incoming.symbol, incoming.qty
+                    );
+            }
+
+            out << "SELF_TRADE_PREVENTED|"
+                << incoming.id << "|"
+                << incoming.traderId << "\n";
+
+            out << "CANCELLED|"
+                << incoming.id << "|"
+                << incoming.traderId << "|"
+                << incoming.type << "|"
+                << incoming.symbol << "|"
+                << fixed << setprecision(2)
+                << incoming.price << "|"
+                << incoming.qty << "\n";
+
+            if (owner)
+                emitAccount(*owner, out);
+
             break;
         }
+
         const double tradePrice =
             (buyRef.sequence < sellRef.sequence)
                 ? buyRef.price
@@ -285,9 +330,8 @@ bool TradingEngine::executeMatching(OrderBook& book, char, ostream& out)
         Trader* seller = findTrader(sell.traderId);
 
         if (!buyer || !seller || quantity <= 0)
-        {
             break;
-        }
+
         buyer->releaseCash(buy.price * quantity);
 
         if (!buyer->deductBalance(tradePrice * quantity))
@@ -323,14 +367,10 @@ bool TradingEngine::executeMatching(OrderBook& book, char, ostream& out)
         traded = true;
 
         if (buyRef.qty == 0)
-        {
             book.removeBestBuy();
-        }
 
         if (sellRef.qty == 0)
-        {
             book.removeBestSell();
-        }
     }
 
     return traded;
@@ -398,7 +438,7 @@ void TradingEngine::addOrder(int traderId, char type,const string& symbol, doubl
         << order.symbol << "|" << fixed << setprecision(2)
         << order.price << "|" << order.qty << "\n";
 
-    executeMatching(*book, type, out);
+    executeMatching(*book, order.id, out);
 
     out << "END\n";
 }
