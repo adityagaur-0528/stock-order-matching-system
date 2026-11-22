@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketSim — Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+<div class="auth-shell">
+    <div class="brand-block">
+        <div class="brand">MARKET<span>SIM</span></div>
+        <p>Stock Order Matching Simulator</p>
+        <div class="auth-features"><span>Custom BST</span><span>FIFO Queue</span><span>Price-Time Matching</span></div>
+    </div>
+    <div class="auth-card">
+        <div class="tabs"><button class="tab active" data-tab="login" type="button">Login</button><button class="tab" data-tab="signup" type="button">Create account</button></div>
+        <form id="loginForm" class="auth-form">
+            <label>Username<input id="loginUsername" autocomplete="username" required></label>
+            <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+            <button class="primary-btn" type="submit">Enter Terminal</button>
+        </form>
+        <form id="signupForm" class="auth-form hidden">
+            <label>Full name<input id="signupName" required maxlength="60"></label>
+            <label>Username<input id="signupUsername" autocomplete="username" required minlength="3" maxlength="24" pattern="[a-zA-Z0-9_.-]{3,24}"></label>
+            <label>Password<input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required></label>
+            <label>Starting virtual cash<input id="signupBalance" type="text" value="₹1,00,000 (fixed)" readonly></label>
+            <p class="hint">25 distinct starter stocks are added free to your virtual portfolio.</p>
+            <button class="primary-btn" type="submit">Create Trader</button>
+        </form>
+        <div id="authMessage" class="message" aria-live="polite"></div>
+    </div>
+</div>
+<script src="auth.js"></script>
+</body>
+</html>

@@ -1,45 +1,3 @@
-# Stock Order Matching Simulator
-
-A C++ based Stock Order Matching Simulator designed to simulate the processing and matching of buy and sell orders using Data Structures and Object-Oriented Programming.
-
-## 📌 Project Overview
-
-The system accepts stock buy and sell orders from users and processes them according to price-time priority. It maintains active orders, checks whether compatible buy and sell orders can be matched, and updates the remaining quantities after execution.
-
-## 🎯 Objectives
-
-- Accept and manage buy and sell orders.
-- Organize orders based on price priority.
-- Implement price-time priority for order matching.
-- Handle partial and complete order execution.
-- Maintain pending orders after unsuccessful or partial matching.
-- Demonstrate the practical use of Data Structures and OOP in C++.
-
-## 🛠️ Technology Stack
-
-- **Language:** C++
-- **Concepts:** Data Structures, Object-Oriented Programming
-- **Data Structures:** Map, Queue / Order-based structures, BST
-- **Development Environment:** Visual Studio Code
-- **Version Control:** Git & GitHub
-
-## ⚙️ System Workflow
-
-```text
-User Input
-    ↓
-Order Creation
-    ↓
-Order Book
-    ↓
-Price-Time Priority
-    ↓
-Matching Engine
-    ↓
-Trade Execution
-    ↓
-
-
 # Stock Order Matching Simulator — V2
 
 This redesign intentionally keeps the project academically strong without turning it into a 3,500+ line monolith.
@@ -50,7 +8,7 @@ Web authentication + market-data API → Node/Express → line protocol → C++ 
 
 ## API choice
 
-The market-data layer uses Indian API (stock.indianapi.in) instead of Twelve Data. It exposes stock search/details, NSE most-active stocks, current NSE/BSE pricing and historical price data. Put the API key in backend/.env as INDIAN_API_KEY.
+The market-data layer uses Indian API (`stock.indianapi.in`) instead of Twelve Data. It exposes stock search/details, NSE most-active stocks, current NSE/BSE pricing and historical price data. Put the API key in `backend/.env` as `INDIAN_API_KEY`.
 
 ## C++ responsibilities
 
@@ -65,6 +23,37 @@ The market-data layer uses Indian API (stock.indianapi.in) instead of Twelve Dat
 - Partial fills
 - Trade settlement
 - Machine-readable order book output for the UI
-Quantity Update
-    ↓
-Pending / Completed Orders
+
+## Web responsibilities
+
+- Password hashing with Node's `crypto.scrypt`
+- Token-based authenticated sessions
+- User → Trader ID mapping
+- Market-data integration
+- API boundary validation
+- Graphical trading terminal
+- Market-depth visualization
+- Price chart
+
+## No DBMS
+
+User accounts are persisted as a small JSON file because the project does not require a database. Passwords are never stored in plaintext.
+
+## Build (PowerShell)
+
+From the `cpp` folder:
+
+```powershell
+g++ -static -std=c++17 .\models.cpp .\data_structures.cpp .\trading_engine.cpp .\engine_bridge.cpp -o .\engine_bridge.exe
+```
+
+Then from `backend`:
+
+```powershell
+npm install
+copy .env.example .env
+# put your Indian API key in .env
+node server.js
+```
+
+Open `http://localhost:5000/login.html`.

@@ -1,0 +1,14 @@
+MARKETSIM SERVER PATCH
+
+This patch contains only backend/server.js.
+
+IMPORTANT:
+1. Extract this ZIP into your EXISTING project root folder:
+   C:\Users\22200\Desktop\Hi\StockOrderMatchingSimulator_V2
+2. When Windows asks, choose "Replace the file in the destination" for backend/server.js.
+3. Do NOT replace backend/.env or backend/data/users.json.
+4. Open the backend folder of the existing project in VS Code (not a file opened from the ZIP temp folder).
+5. Verify with:
+   Select-String -Path .\server.js -Pattern "function addOrderToHistory"
+   Select-String -Path .\server.js -Pattern "function applyTradesToHistory"
+6. Restart the server from that backend folder using node server.js.

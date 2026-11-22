@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketSim — Trading Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="market-sim-override.css">
+</head>
+<body class="terminal-page">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-title"><strong>Trading Terminal</strong><small>Markets · Orders · Portfolio</small></div>
+      <div class="search-wrap">
+        <input id="stockSearch" type="search" placeholder="Search Indian stock — e.g. INFY" autocomplete="off">
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+      <div class="quick-nav-wrap">
+        <button id="quickNavToggle" class="quick-nav-toggle" type="button"
+          aria-label="Open navigation menu" aria-controls="quickNavMenu"
+          aria-expanded="false" title="Quick navigation">⋮</button>
+        <nav id="quickNavMenu" class="quick-nav-menu" aria-label="Quick navigation" hidden>
+          <div class="quick-nav-heading">GO TO</div>
+          <a class="quick-nav-link" href="#dashboard-view" data-view="dashboard-view"><span>⌂</span> Dashboard</a>
+          <a class="quick-nav-link" href="#ai-analyst" data-view="ai-analyst"><span>✳</span> AI Analyst</a>
+          <a class="quick-nav-link" href="#trading" data-view="trading"><span>↗</span> Trade / Market Depth</a>
+          <a class="quick-nav-link" href="#account" data-view="account"><span>▤</span> Portfolio</a>
+          <a class="quick-nav-link" href="#orders" data-view="orders"><span>≡</span> My Orders</a>
+          <a class="quick-nav-link" href="#executed-trades" data-view="executed-trades"><span>⇄</span> Executed Trades</a>
+          <a class="quick-nav-link" href="#recent-execution" data-view="recent-execution"><span>◷</span> Recent Execution</a>
+        </nav>
+      </div>
+      <div class="user-menu">
+        <div class="user-details"><strong id="userName">Trader</strong><small id="userId"></small></div>
+        <button id="logoutBtn" class="ghost-btn" type="button">Logout</button>
+      </div>
+    </header>
+
+    <main class="terminal" id="appMain">
+      <section id="dashboard-view" class="view-section active-view" aria-label="Dashboard">
+      <section class="market-head panel">
+        <div><div class="eyebrow">SELECTED MARKET</div><h1 id="stockName">Select a stock</h1><span id="stockSymbol" class="symbol">—</span></div>
+        <div class="quote"><div id="stockPrice">₹ —</div><span id="stockChange">—</span></div>
+      </section>
+
+      <section class="chart-grid">
+        <div class="panel chart-panel">
+          <div class="panel-title"><span>Price Chart</span><select id="chartPeriod"><option value="1m">1 Month</option><option value="6m">6 Months</option><option value="1yr">1 Year</option></select></div>
+          <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+        </div>
+        <div class="panel market-list"><div class="panel-title"><span>Most Active</span><span class="hint">Market watch</span></div><div id="activeStocks" class="active-list"></div></div>
+      </section>
+      </section>
+
+      <section id="ai-analyst" class="panel ai-panel view-section" aria-label="AI Analyst" hidden>
+        <div class="panel-title"><span>MarketSim AI Analyst</span><button id="runAiScan" type="button" class="primary-btn">Scan market</button></div>
+        <p class="ai-intro">Scans available market data, ranks observable momentum and volume signals, and explains the evidence. It does not place orders.</p>
+        <div id="aiStatus" class="message" aria-live="polite">Ready to scan.</div>
+        <div id="aiSummary" class="ai-summary">Run a market scan to see ranked candidates and explanations.</div>
+        <div id="aiCandidates" class="ai-candidates"></div>
+        <small id="aiDisclaimer" class="ai-disclaimer">Market data may be delayed or incomplete. Signals are not predictions or personalized financial advice.</small>
+      </section>
+
+      <section id="trading" class="trading-grid view-section" aria-label="Trade and Market Depth" hidden>
+        <div class="panel order-panel">
+          <div class="panel-title"><span>Place Order</span><span class="hint">C++ matching engine</span></div>
+          <div class="order-toggle"><button id="buyToggle" class="buy active" type="button">BUY</button><button id="sellToggle" class="sell" type="button">SELL</button></div>
+          <label for="orderPrice">Limit price (₹)<input id="orderPrice" type="number" step="0.01" min="0.01" placeholder="Enter price"></label>
+          <label for="orderQuantity">Quantity (shares)<input id="orderQuantity" type="number" min="1" step="1" value="1"></label>
+          <div class="order-estimate"><span>Estimated order value</span><strong id="orderEstimate">₹ 0.00</strong></div>
+          <button id="placeOrder" class="primary-btn wide" type="button">Place BUY order</button>
+          <div id="orderMessage" class="message" aria-live="polite"></div>
+        </div>
+        <div class="panel book-panel">
+          <div class="panel-title"><span>Market Depth</span><span id="bookStatus" class="live-dot">● Order book</span></div>
+          <div class="depth-header"><div>BUY QTY</div><div>PRICE</div><div>SELL QTY</div></div>
+          <div id="depthRows" class="depth-rows"><div class="empty">Select a stock to view its order book.</div></div>
+        </div>
+      </section>
+
+      <section id="account" class="panel account-panel view-section" aria-label="Portfolio" hidden>
+        <div class="panel-title"><span>Virtual Broker Account</span><span class="hint">Simulated settlement</span></div>
+        <div class="account-overview">
+          <div><div class="account-number" id="cashAvailable">₹ —</div><div class="account-label">Available cash</div></div>
+          <div class="account-stat"><span>Holdings</span><strong id="holdingCount">0</strong></div>
+          <div class="account-stat"><span>Open orders</span><strong id="openOrderCount">0</strong></div>
+          <div class="account-stat"><span>Trades</span><strong id="tradeCount">0</strong></div>
+        </div>
+        <div id="holdingsList" class="holdings"></div>
+      </section>
+
+      <section id="orders" class="panel history-panel view-section" aria-label="My Orders" hidden>
+        <div class="panel-title"><span>My Orders</span><span class="hint">Account history</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th><th>Order Value</th><th>Execution</th><th>Status</th><th>Action</th></tr></thead><tbody id="ordersTableBody"><tr><td colspan="8" class="empty">No orders yet.</td></tr></tbody></table></div>
+      </section>
+
+      <section id="executed-trades" class="panel history-panel view-section" aria-label="Executed Trades" hidden>
+        <div class="panel-title"><span>Executed Trades</span><span class="live-dot">● C++ settlement</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Side</th><th>Stock</th><th>Qty</th><th>Execution Price</th><th>Trade Value</th><th>Executed At</th></tr></thead><tbody id="tradesTableBody"><tr><td colspan="6" class="empty">No completed trades yet.</td></tr></tbody></table></div>
+      </section>
+
+      <section id="recent-execution" class="panel trade-panel view-section" aria-label="Recent Execution" hidden>
+        <div class="panel-title"><span>Recent Execution</span><span class="hint">Latest fills</span></div>
+        <div id="tradeFeed" class="trade-feed"><div class="empty">No trades yet.</div></div>
+      </section>
+      <footer class="terminal-footer">MarketSim is a virtual trading simulator. Quotes may be delayed; no real orders are placed.</footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (() => {
+      const toggle = document.getElementById("quickNavToggle");
+      const menu = document.getElementById("quickNavMenu");
+      const views = [...document.querySelectorAll(".view-section")];
+      const links = [...menu.querySelectorAll("[data-view]")];
+
+      function closeMenu() {
+        menu.hidden = true;
+        toggle.setAttribute("aria-expanded", "false");
+      }
+
+      function showView(viewId) {
+        const target = document.getElementById(viewId);
+        if (!target || !target.classList.contains("view-section")) return;
+        views.forEach(view => {
+          const active = view === target;
+          view.hidden = !active;
+          view.classList.toggle("active-view", active);
+        });
+        links.forEach(link => {
+          const active = link.dataset.view === viewId;
+          link.classList.toggle("active", active);
+          if (active) link.setAttribute("aria-current", "page");
+          else link.removeAttribute("aria-current");
+        });
+        history.replaceState(null, "", `#${viewId}`);
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+
+      toggle.addEventListener("click", event => {
+        event.stopPropagation();
+        menu.hidden = !menu.hidden;
+        toggle.setAttribute("aria-expanded", String(!menu.hidden));
+      });
+
+      menu.addEventListener("click", event => {
+        const link = event.target.closest("a[data-view]");
+        if (!link) return;
+        event.preventDefault();
+        showView(link.dataset.view);
+        closeMenu();
+      });
+
+      document.addEventListener("click", event => {
+        if (!event.target.closest(".quick-nav-wrap")) closeMenu();
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeMenu();
+          toggle.focus();
+        }
+      });
+
+      // Dashboard (stock quote + graph + market watch) is the default landing view.
+      const initialView = location.hash.slice(1);
+      showView(views.some(view => view.id === initialView) ? initialView : "dashboard-view");
+
+      const price = document.getElementById("orderPrice");
+      const quantity = document.getElementById("orderQuantity");
+      const estimate = document.getElementById("orderEstimate");
+      const place = document.getElementById("placeOrder");
+      const buy = document.getElementById("buyToggle");
+      const sell = document.getElementById("sellToggle");
+      const updateEstimate = () => {
+        const p = Number(price.value), q = Number(quantity.value);
+        estimate.textContent = "₹ " + (p > 0 && q > 0 ? p * q : 0).toLocaleString("en-IN", {
+          minimumFractionDigits: 2, maximumFractionDigits: 2
+        });
+      };
+      price.addEventListener("input", updateEstimate);
+      quantity.addEventListener("input", updateEstimate);
+      const updateSideLabel = () => {
+        place.textContent = `Place ${sell.classList.contains("active") ? "SELL" : "BUY"} order`;
+      };
+      buy.addEventListener("click", updateSideLabel);
+      sell.addEventListener("click", updateSideLabel);
+      updateEstimate();
+      updateSideLabel();
+    })();
+  </script>
+</body>
+</html>
