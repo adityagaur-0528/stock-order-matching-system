@@ -113,6 +113,7 @@ int CustomBST::createNode(double price)
             nodes[i].price = price;
             nodes[i].left = -1;
             nodes[i].right = -1;
+            nodes[i].orders = CustomQueue();   // never inherit stale orders from a freed slot
             nodes[i].active = true;
             ++nodeCount;
             return i;
@@ -228,6 +229,7 @@ int CustomBST::removeMinNode(int current)
         int rightChild = nodes[current].right;
 
         nodes[current].active = false;
+        nodes[current].orders = CustomQueue();
         nodes[current].left = -1;
         nodes[current].right = -1;
 
@@ -250,6 +252,7 @@ int CustomBST::removeMaxNode(int current)
         int leftChild = nodes[current].left;
 
         nodes[current].active = false;
+        nodes[current].orders = CustomQueue();
         nodes[current].left = -1;
         nodes[current].right = -1;
 
@@ -289,7 +292,7 @@ bool CustomBST::removeMaxOrder()
     root = removeMaxNode(root);
     return true;
 }
-bool CustomBST::cancelNode(int current, int orderId, bool& removed)
+int CustomBST::cancelNode(int current, int orderId, bool& removed)
 {
     if (current == -1 || removed)
         return current;
@@ -304,6 +307,7 @@ bool CustomBST::cancelNode(int current, int orderId, bool& removed)
             {
                 int rightChild = nodes[current].right;
                 nodes[current].active = false;
+                nodes[current].orders = CustomQueue();
                 --nodeCount;
                 return rightChild;
             }
@@ -312,6 +316,7 @@ bool CustomBST::cancelNode(int current, int orderId, bool& removed)
             {
                 int leftChild = nodes[current].left;
                 nodes[current].active = false;
+                nodes[current].orders = CustomQueue();
                 --nodeCount;
                 return leftChild;
             }

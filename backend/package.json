@@ -4,7 +4,16 @@
   "private": true,
   "description": "Academic stock order matching simulator with C++ trading engine and web UI",
   "main": "server.js",
-  "scripts": {"start": "node server.js"},
-  "engines": {"node": ">=18"},
-  "dependencies": {"dotenv": "^16.4.5", "express": "^4.21.2"}
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0"
+  }
 }

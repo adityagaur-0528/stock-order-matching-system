@@ -1,4 +1,9 @@
-**/node_modules
-**/.env
-**/users.json
+node_modules
+backend/node_modules
+.env
+backend/.env
+backend/data/users.json
+*.exe
 .git
+.gitignore
+*.zip

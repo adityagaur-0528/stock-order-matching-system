@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const dotenv = require("dotenv");
+const helmet = require("helmet");
 const crypto = require("crypto");
 const fs = require("fs");
 const { spawn } = require("child_process");
@@ -20,7 +21,12 @@ const ENGINE_PATH = path.join(__dirname, "../cpp", ENGINE_FILE);
 const USERS_FILE = path.join(__dirname, "data/users.json");
 fs.mkdirSync(path.dirname(USERS_FILE), { recursive: true });
 
-app.use(express.json());
+app.use(helmet({
+    contentSecurityPolicy: false
+}));
+
+app.use(express.json({ limit: "20kb" }));
+
 app.use(express.static(FRONTEND));
 
 const STARTING_CASH = 100000;

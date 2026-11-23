@@ -62,7 +62,7 @@ class CustomBST
     int removeMinNode(int);
     int removeMaxNode(int);
 
-    bool cancelNode(int, int, bool&);
+    int cancelNode(int, int, bool&);
 
     void emitAscending(int, ostream&) const;
     void emitDescending(int, ostream&) const;
